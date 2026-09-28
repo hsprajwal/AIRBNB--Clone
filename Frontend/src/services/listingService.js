@@ -3,28 +3,25 @@
  * Handles communication between React frontend and Express backend.
  */
 
-const BACKEND_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Vercel uses VITE_API_URL.
+// Local development falls back to localhost.
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:5000'
+).replace(/\/$/, '');
 
-const API_BASE_URL = `${BACKEND_URL.replace(/\/$/, '')}/api`;
+const API_PREFIX = `${API_BASE_URL}/api`;
 
 /**
- * Helper to execute API requests
+ * Helper to execute API requests.
  */
 async function fetchEndpoint(endpoint) {
-  let response;
+  const url = `${API_PREFIX}${endpoint}`;
 
-  try {
-    response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-  } catch (error) {
-    throw new Error(
-      `Unable to connect to backend: ${error.message}`
-    );
-  }
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
 
   if (!response.ok) {
     throw new Error(
@@ -36,35 +33,35 @@ async function fetchEndpoint(endpoint) {
 }
 
 /**
- * Fetch listing property details
+ * Fetch listing property details.
  */
 export async function fetchListing() {
   return await fetchEndpoint('/listing');
 }
 
 /**
- * Fetch gallery photos
+ * Fetch gallery photos.
  */
 export async function fetchPhotos() {
   return await fetchEndpoint('/listing/photos');
 }
 
 /**
- * Fetch room & photo categories
+ * Fetch room and photo categories.
  */
 export async function fetchCategories() {
   return await fetchEndpoint('/listing/categories');
 }
 
 /**
- * Fetch sleeping arrangements
+ * Fetch sleeping arrangements.
  */
 export async function fetchSleepingArrangements() {
   return await fetchEndpoint('/listing/sleeping-arrangements');
 }
 
 /**
- * Fetch complete listing data
+ * Fetch complete listing data.
  */
 export async function fetchCompleteListing() {
   const [
@@ -81,19 +78,11 @@ export async function fetchCompleteListing() {
 
   return {
     ...listing,
-
-    photos: Array.isArray(photos)
-      ? photos
-      : listing.photos,
-
-    rooms: Array.isArray(categories)
-      ? categories
-      : listing.rooms,
-
+    photos: Array.isArray(photos) ? photos : listing.photos,
+    rooms: Array.isArray(categories) ? categories : listing.rooms,
     photoCategories: Array.isArray(categories)
       ? categories
       : listing.photoCategories,
-
     sleepingArrangements: Array.isArray(sleepingArrangements)
       ? sleepingArrangements
       : listing.sleepingArrangements,
