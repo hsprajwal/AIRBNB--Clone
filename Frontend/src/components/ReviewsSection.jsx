@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Map,
   Tag,
+  Sparkles,
 } from 'lucide-react';
 
 const SprayBottleIcon = ({ size = 24 }) => (

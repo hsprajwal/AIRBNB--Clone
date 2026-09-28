@@ -8,19 +8,55 @@
 const PROD_API_URL = 'https://airbnb-clone-backend-aum7.onrender.com';
 const LOCAL_API_URL = 'http://localhost:5000';
 
-// Resolve API base URL from Vite environment variable or mode
-const envBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
-const rawBase = envBase || (import.meta.env.PROD ? PROD_API_URL : LOCAL_API_URL);
+/**
+ * Resolves the API base URL.
+ * - In production: Permanently uses PROD_API_URL. Any env variable containing
+ *   localhost or 127.0.0.1 is strictly rejected.
+ * - In local development: Uses LOCAL_API_URL (http://localhost:5000).
+ */
+export function getApiBaseUrl() {
+  const isBrowser = typeof window !== 'undefined';
+  const hostname = isBrowser ? (window.location.hostname || '') : '';
+  const isLocalhost = (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '[::1]' ||
+    hostname.endsWith('.local')
+  );
 
-// Normalize: remove trailing slash, ensure '/api' suffix is present
-const cleanBase = rawBase.replace(/\/+$/, '');
-const API_BASE_URL = cleanBase.endsWith('/api') ? cleanBase : `${cleanBase}/api`;
+  // Production condition: Vite production mode OR deployed non-localhost browser hostname
+  const isProduction = Boolean(import.meta.env.PROD) || (isBrowser && !isLocalhost && hostname !== '');
+
+  if (isProduction) {
+    const rawEnv = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').trim();
+    // Strictly disallow localhost or 127.0.0.1 in production
+    if (
+      rawEnv &&
+      !rawEnv.includes('localhost') &&
+      !rawEnv.includes('127.0.0.1') &&
+      (rawEnv.startsWith('http://') || rawEnv.startsWith('https://'))
+    ) {
+      const clean = rawEnv.replace(/\/+$/, '');
+      return clean.endsWith('/api') ? clean : `${clean}/api`;
+    }
+    // Default permanently to Render production API URL
+    return `${PROD_API_URL}/api`;
+  }
+
+  // Local development mode only
+  const rawEnv = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || LOCAL_API_URL).trim();
+  const clean = (rawEnv || LOCAL_API_URL).replace(/\/+$/, '');
+  return clean.endsWith('/api') ? clean : `${clean}/api`;
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Helper to execute API requests to the resolved API_BASE_URL
  */
 async function fetchEndpoint(endpoint) {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}${endpoint}`;
   const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
