@@ -1,34 +1,28 @@
 /**
  * Listing Service - API Layer
  * Handles communication between React frontend and Express backend.
- *
- * Local development:
- *   http://localhost:5000/api
- *
- * Production:
- *   Uses VITE_API_URL from Vercel environment variables.
  */
 
-const API_BASE_URL =
+const BACKEND_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-const API_ROOT = `${API_BASE_URL}/api`;
+const API_BASE_URL = `${BACKEND_URL.replace(/\/$/, '')}/api`;
 
 /**
- * Helper to execute fetch with error handling.
+ * Helper to execute API requests
  */
 async function fetchEndpoint(endpoint) {
   let response;
 
   try {
-    response = await fetch(`${API_ROOT}${endpoint}`, {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         Accept: 'application/json',
       },
     });
   } catch (error) {
     throw new Error(
-      `Network error connecting to backend: ${error.message}`
+      `Unable to connect to backend: ${error.message}`
     );
   }
 
@@ -42,36 +36,35 @@ async function fetchEndpoint(endpoint) {
 }
 
 /**
- * Fetch listing property details.
+ * Fetch listing property details
  */
 export async function fetchListing() {
   return await fetchEndpoint('/listing');
 }
 
 /**
- * Fetch gallery photos.
+ * Fetch gallery photos
  */
 export async function fetchPhotos() {
   return await fetchEndpoint('/listing/photos');
 }
 
 /**
- * Fetch room & photo categories.
+ * Fetch room & photo categories
  */
 export async function fetchCategories() {
   return await fetchEndpoint('/listing/categories');
 }
 
 /**
- * Fetch sleeping arrangements.
+ * Fetch sleeping arrangements
  */
 export async function fetchSleepingArrangements() {
   return await fetchEndpoint('/listing/sleeping-arrangements');
 }
 
 /**
- * Fetch complete listing data by fetching listing details,
- * photos, categories, and sleeping arrangements.
+ * Fetch complete listing data
  */
 export async function fetchCompleteListing() {
   const [
@@ -88,11 +81,19 @@ export async function fetchCompleteListing() {
 
   return {
     ...listing,
-    photos: Array.isArray(photos) ? photos : listing.photos,
-    rooms: Array.isArray(categories) ? categories : listing.rooms,
+
+    photos: Array.isArray(photos)
+      ? photos
+      : listing.photos,
+
+    rooms: Array.isArray(categories)
+      ? categories
+      : listing.rooms,
+
     photoCategories: Array.isArray(categories)
       ? categories
       : listing.photoCategories,
+
     sleepingArrangements: Array.isArray(sleepingArrangements)
       ? sleepingArrangements
       : listing.sleepingArrangements,
