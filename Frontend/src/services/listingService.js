@@ -1,17 +1,27 @@
 /**
  * Listing Service - API Layer
- * Uses the deployed Render backend in production
- * and localhost backend during local development.
+ * Connects to the Express backend API.
+ * Uses https://airbnb-clone-backend-aum7.onrender.com in production
+ * and http://localhost:5000 during local development.
  */
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const PROD_API_URL = 'https://airbnb-clone-backend-aum7.onrender.com';
+const LOCAL_API_URL = 'http://localhost:5000';
+
+// Resolve API base URL from Vite environment variable or mode
+const envBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+const rawBase = envBase || (import.meta.env.PROD ? PROD_API_URL : LOCAL_API_URL);
+
+// Normalize: remove trailing slash, ensure '/api' suffix is present
+const cleanBase = rawBase.replace(/\/+$/, '');
+const API_BASE_URL = cleanBase.endsWith('/api') ? cleanBase : `${cleanBase}/api`;
 
 /**
- * Helper to execute API requests
+ * Helper to execute API requests to the resolved API_BASE_URL
  */
 async function fetchEndpoint(endpoint) {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
     },
@@ -55,7 +65,8 @@ export async function fetchSleepingArrangements() {
 }
 
 /**
- * Fetch complete listing data
+ * Fetch complete listing data by fetching listing details, photos, categories,
+ * and sleeping arrangements from the Express API endpoints.
  */
 export async function fetchCompleteListing() {
   const [

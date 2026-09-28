@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+
 import {
   propertyDetails,
   galleryPhotos,
@@ -10,51 +11,72 @@ import {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for frontend requests
-app.use(cors());
+// --------------------------------------------------
+// CORS
+// --------------------------------------------------
+// The API is public and does not use cookies/authentication,
+// so allow requests from the deployed frontend and other clients.
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  })
+);
+
 app.use(express.json());
 
-// Health check endpoint
+// --------------------------------------------------
+// HEALTH CHECK
+// --------------------------------------------------
+
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+  });
 });
 
-/**
- * GET /api/listing
- * Returns complete listing details, gallery photos, room categories, and sleeping arrangements.
- */
+// --------------------------------------------------
+// LISTING
+// --------------------------------------------------
+
 app.get('/api/listing', (req, res) => {
   res.json(propertyDetails);
 });
 
-/**
- * GET /api/listing/photos
- * Returns gallery photos collection.
- */
+// --------------------------------------------------
+// PHOTOS
+// --------------------------------------------------
+
 app.get('/api/listing/photos', (req, res) => {
   res.json(galleryPhotos);
 });
 
-/**
- * GET /api/listing/categories
- * Returns photo tour categories.
- */
+// --------------------------------------------------
+// PHOTO CATEGORIES
+// --------------------------------------------------
+
 app.get('/api/listing/categories', (req, res) => {
   res.json(photoCategories);
 });
 
-/**
- * GET /api/listing/sleeping-arrangements
- * Returns sleeping arrangements.
- */
+// --------------------------------------------------
+// SLEEPING ARRANGEMENTS
+// --------------------------------------------------
+
 app.get('/api/listing/sleeping-arrangements', (req, res) => {
   res.json(sleepingArrangements);
 });
 
-// Root informational endpoint
+// --------------------------------------------------
+// ROOT
+// --------------------------------------------------
+
 app.get('/', (req, res) => {
   res.json({
     name: 'Airbnb Clone Listing API',
+    status: 'running',
     endpoints: {
       listing: '/api/listing',
       photos: '/api/listing/photos',
@@ -65,6 +87,12 @@ app.get('/', (req, res) => {
   });
 });
 
+// --------------------------------------------------
+// START SERVER
+// --------------------------------------------------
+
 app.listen(PORT, () => {
-  console.log(`Airbnb Clone backend server running at http://localhost:${PORT}`);
+  console.log(
+    `Airbnb Clone backend server running on port ${PORT}`
+  );
 });

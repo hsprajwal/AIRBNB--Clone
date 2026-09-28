@@ -179,13 +179,16 @@ Airbnb Clone/
    ```bash
    npm install
    ```
-3. Start the Vite development server:
+3. Environment Configuration:
+   - For local development, `Frontend/.env.development` points to `http://localhost:5000`.
+   - For production, `Frontend/.env.production` points to `https://airbnb-clone-backend-aum7.onrender.com`.
+4. Start the Vite development server:
    ```bash
    npm run dev
    ```
    *The client application will start on `http://localhost:5173`.*
 
-4. Open your browser and navigate to `http://localhost:5173`.
+5. Open your browser and navigate to `http://localhost:5173`.
 
 ---
 
